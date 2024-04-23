@@ -10,7 +10,7 @@ const AdminLayout = ({ children }) => {
         <TopBar />
         <Sidebar links={sidebarItem} />
       </div>
-      <div className="md:ml-[300px] mt-[80px] flex-1 p-3 h-[calc(100vh-80px)]">
+      <div className="md:ml-[300px] mt-[80px] flex-1 p-3 min-h-[calc(100vh-80px)]">
         {children}
       </div>
     </>

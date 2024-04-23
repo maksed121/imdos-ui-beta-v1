@@ -5,11 +5,11 @@ const TableSkeleton = ({ loop }) => {
   return (
     <div
       role="status"
-      className="w-full p-2 space-y-4 border border-zinc-200 divide-y divide-zinc-200 rounded-lg shadow animate-pulse dark:divide-zinc-700 md:p-6 dark:border-zinc-700"
+      className="w-full overflow-x-scroll no-scrollbar p-2 space-y-4 border border-zinc-200 divide-y divide-zinc-200 rounded-lg shadow animate-pulse dark:divide-zinc-700 md:p-6 dark:border-zinc-700"
     >
       {items.map((index) => (
         <div
-          className={`flex items-center justify-between ${
+          className={`flex gap-3 items-center justify-between ${
             index == 0 ? "pt-0" : "pt-4"
           }`}
           key={index}

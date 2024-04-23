@@ -8,7 +8,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
   DropdownMenuSub,
   DropdownMenuSubContent,
   DropdownMenuSubTrigger,
@@ -31,10 +30,25 @@ import {
 import { useTheme } from "next-themes";
 import { useImdosUI } from "@/providers/ImdosProvider";
 import { cn } from "@/lib/utils";
+import { Logout } from "@/lib/server-utils";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 const TopBar = () => {
   const { setTheme } = useTheme();
-  const { user, sideBar, setSideBar } = useImdosUI();
+  const { user, sideBar, setSideBar, setConfirmAlert } = useImdosUI();
+  const router = useRouter();
+
+  const logOut = async () => {
+    const response = await Logout();
+    if (response.status == 200) {
+      toast.success(response.message);
+      router.replace("/");
+    } else {
+      toast.error(response.message);
+    }
+  };
+
   return (
     <div className="h-[80px] w-screen flex fixed top-0 right-0 md:ml-[300px] z-[50] backdrop-blur-lg justify-between items-center px-4 border-b">
       <Button
@@ -108,7 +122,16 @@ const TopBar = () => {
               </DropdownMenuPortal>
             </DropdownMenuSub>
           </DropdownMenuGroup>
-          <DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={() => {
+              setConfirmAlert({
+                open: true,
+                action: logOut,
+                message: "Are you sure want to logout from your dashboard?",
+                confirmText: "Logout",
+              });
+            }}
+          >
             <LogOut className="mr-2 h-4 w-4" />
             <span>Log out</span>
           </DropdownMenuItem>
