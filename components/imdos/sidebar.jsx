@@ -37,13 +37,7 @@ const Sidebar = ({ links }) => {
         <ScrollShadow className="w-[300px] h-[calc(100vh-80px)] overflow-y-scroll no-scrollbar border-r px-3">
           <div className="pb-4">
             {links.map((item, index) => (
-              <div
-                key={index}
-                className="px-1"
-                onClick={() => {
-                  setSideBar(false);
-                }}
-              >
+              <div key={index} className="px-1">
                 <h1 className={cn("my-2 text-sm text-foreground-400")}>
                   {item.title}
                 </h1>
@@ -59,6 +53,10 @@ const Sidebar = ({ links }) => {
                           <Link
                             href={link.sub ? "#" : link.url}
                             className="w-full"
+                            onClick={() => {
+                              if (link.sub) return;
+                              setSideBar(false);
+                            }}
                           >
                             <MenubarTrigger
                               className={cn(
@@ -66,7 +64,7 @@ const Sidebar = ({ links }) => {
                                   variant: "ghost",
                                   size: "lg",
                                 }),
-                                "justify-between px-3 w-full group"
+                                "justify-between cursor-pointer px-3 w-full group"
                               )}
                             >
                               <div className="flex items-center gap-2">
@@ -81,10 +79,16 @@ const Sidebar = ({ links }) => {
                           {link.sub && (
                             <MenubarContent className="translate-x-[5px] w-[265px]">
                               {link.sub.map((sub, subIndex) => (
-                                <Link href={sub.url} key={subIndex}>
+                                <Link
+                                  href={sub.url}
+                                  key={subIndex}
+                                  onClick={() => {
+                                    setSideBar(false);
+                                  }}
+                                >
                                   <MenubarItem
                                     key={subIndex}
-                                    className="flex items-center py-2 gap-2"
+                                    className="flex cursor-pointer items-center py-2 gap-2"
                                   >
                                     <CircleDot size={10} className="shrink-0" />
                                     <span className="truncate">

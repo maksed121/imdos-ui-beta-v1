@@ -12,18 +12,16 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash } from "lucide-react";
 import { useImdosUI } from "@/providers/ImdosProvider";
-import { AlertDanger } from "@/components/imdos/alert";
 
 import DataTable from "@/components/imdos/data-table";
 import FormModal from "@/components/imdos/form-modal";
-import useSWR from "swr";
 import toast from "react-hot-toast";
 import RippleButton from "@/components/imdos/ripple-button";
 import FilterForm from "@/components/imdos/filter-form";
 
 export const categorySchema = z.object({
   name: z.string().refine((val) => val.length != 0, "Name is required"),
-  priority: z.any().refine((val) => val.length != 0, "Priority is required"),
+  slug: z.any().refine((val) => val.length != 0, "Slug is required"),
   logo: z.any().refine((val) => val.length != 0, "Logo is required"),
 });
 
@@ -37,7 +35,7 @@ const prefix = {
 };
 
 const Example = () => {
-  const { formModal, setFormModal, setConfirmAlert, setLoading } = useImdosUI();
+  const { formModal, setFormModal, setConfirmAlert } = useImdosUI();
   const [tableData, setTableData] = useState(null);
   const [refValues, setRefValues] = useState(null);
 
@@ -226,7 +224,14 @@ const Example = () => {
       title: "Category Name",
       type: "text",
       uid: "name",
+      slug: "slug",
       default: formModal?.data?.name ?? "",
+    },
+    {
+      title: "Slug",
+      type: "slug",
+      uid: "slug",
+      default: formModal?.data?.slug ?? "",
     },
     {
       title: "Priority",

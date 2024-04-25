@@ -2,7 +2,7 @@
 import React from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
+import { useForm, useFormContext } from "react-hook-form";
 import { Button, Input } from "@nextui-org/react";
 
 import {
@@ -273,7 +273,7 @@ const Form = ({ fields, schema, onSubmit, onCancel }) => {
                       label={item.title}
                       placeholder={`Enter your ${item.title.toLowerCase()}`}
                       variant="bordered"
-                      defaultValue={form.value}
+                      defaultValue={field.value}
                       isInvalid={Boolean(form?.formState?.errors[item.uid])}
                       errorMessage={form?.formState?.errors[item.uid]?.message}
                       classNames={{
@@ -324,7 +324,7 @@ const Form = ({ fields, schema, onSubmit, onCancel }) => {
                       type={item.type}
                       label={item.title}
                       variant="bordered"
-                      defaultValue={field.value}
+                      value={field.value}
                       isInvalid={Boolean(form?.formState?.errors[item.uid])}
                       errorMessage={form?.formState?.errors[item.uid]?.message}
                       onChange={(event) => {
@@ -332,6 +332,17 @@ const Form = ({ fields, schema, onSubmit, onCancel }) => {
                         field.onChange(value);
                         if (item.onChange) {
                           item.onChange(value);
+                        }
+                        if (item.slug) {
+                          const slug = value
+                            .toString()
+                            .toLowerCase()
+                            .replace(/\s+/g, "-")
+                            .replace(/[^\w-]+/g, "")
+                            .replace(/--+/g, "-")
+                            .replace(/^-+/, "")
+                            .replace(/-+$/, "");
+                          form.setValue("slug", slug);
                         }
                       }}
                     />
