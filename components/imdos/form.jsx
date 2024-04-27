@@ -2,8 +2,9 @@
 import React from "react";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm, useFormContext } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { Button, Input } from "@nextui-org/react";
+import { DatePicker, DateRangePicker } from "@nextui-org/date-picker";
 
 import {
   Form as FormComponent,
@@ -13,19 +14,10 @@ import {
   FormMessage,
 } from "@/components/imdos-ui/form";
 
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-
 import { RadioGroup, Radio } from "@nextui-org/react";
-
 import { Textarea } from "@nextui-org/react";
 import { Checkbox } from "@nextui-org/react";
-
 import { Autocomplete, AutocompleteItem } from "@nextui-org/react";
-
 import { Button as ShadButton } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { CalendarIcon } from "lucide-react";
@@ -34,10 +26,13 @@ import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { LoadingButton } from "./loading-button";
 import { useImdosUI } from "@/providers/ImdosProvider";
+
 import InputFile from "../imdos-ui/input-field";
 import MultipleDropdown from "../imdos-ui/multiple-dropdown";
+import clsx from "clsx";
+import { parseDate } from "@internationalized/date";
 
-const Form = ({ fields, schema, onSubmit, onCancel }) => {
+const Form = ({ fields, schema, onSubmit, onCancel, layout }) => {
   const { setLoading } = useImdosUI();
   const validation = fields.reduce((acc, field) => {
     acc[field.uid] = field.default;
@@ -60,298 +55,287 @@ const Form = ({ fields, schema, onSubmit, onCancel }) => {
   return (
     <>
       <FormComponent {...form}>
-        <form
-          onSubmit={form.handleSubmit(handleFormSubmit)}
-          className="space-y-2"
-        >
-          {fields.map((item, index) => {
-            if (item.type == "hidden") return;
-            if (item.type == "dropdown") {
+        <form onSubmit={form.handleSubmit(handleFormSubmit)}>
+          <div className={clsx("gap-3 my-3", layout?.base ?? "space-y-2")}>
+            {fields.map((item, index) => {
+              if (item.type == "hidden") return;
+              if (item.type == "dropdown") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <Select
+                        label={item.title}
+                        variant="bordered"
+                        defaultSelectedKeys={field.value && [field.value]}
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
+                        }
+                        onSelectionChange={(value) => {
+                          field.onChange(value);
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                        }}
+                      >
+                        {item?.items?.map((data) => (
+                          <SelectItem key={data.value} value={data.value}>
+                            {data.label}
+                          </SelectItem>
+                        ))}
+                      </Select>
+                    )}
+                  />
+                );
+              }
+              if (item.type == "select") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <Autocomplete
+                        label={item.title}
+                        variant="bordered"
+                        defaultItems={item.items}
+                        selectedKey={field.value}
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
+                        }
+                        onSelectionChange={(value) => {
+                          field.onChange(value ?? "");
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                        }}
+                      >
+                        {item?.items?.map((data) => (
+                          <AutocompleteItem key={data.value} value={data.value}>
+                            {data.label}
+                          </AutocompleteItem>
+                        ))}
+                      </Autocomplete>
+                    )}
+                  />
+                );
+              }
+              if (item.type == "select-multiple") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <MultipleDropdown
+                        label={item.title}
+                        items={item.items}
+                        onChange={(value) => {
+                          field.onChange(value ?? "");
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                        }}
+                        selectedKeys={field.value}
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
+                        }
+                      />
+                    )}
+                  />
+                );
+              }
+              if (item.type == "file") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <InputFile
+                        type={item.type}
+                        label={item.title}
+                        variant="bordered"
+                        placeholder={item.title}
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
+                        }
+                        onChange={(e) => {
+                          field.onChange(e.target.files[0]);
+                          if (item.onChange) {
+                            item.onChange(e.target.files[0]);
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                );
+              }
+              if (item.type == "radio") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <RadioGroup
+                        label={item.title}
+                        value={field.value}
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
+                        }
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                        }}
+                      >
+                        {item.items.map((data, innerIndex) => (
+                          <Radio value={data.value} key={innerIndex}>
+                            {data.label}
+                          </Radio>
+                        ))}
+                      </RadioGroup>
+                    )}
+                  />
+                );
+              }
+              if (item.type == "date") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <DatePicker
+                        label={item.title}
+                        variant="bordered"
+                        defaultValue={
+                          typeof field?.value === "string" && field?.value
+                            ? parseDate(field?.value)
+                            : field?.value ?? null
+                        }
+                        showMonthAndYearPickers
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
+                        }
+                        onChange={(value) => {
+                          field.onChange(value);
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                );
+              }
+
+              if (item.type == "textarea") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <Textarea
+                        label={item.title}
+                        placeholder={`Enter your ${item.title.toLowerCase()}`}
+                        variant="bordered"
+                        value={field.value}
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
+                        }
+                        classNames={{
+                          base: layout?.span,
+                          input: "resize-y min-h-[70px]",
+                        }}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          field.onChange(value);
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                        }}
+                      />
+                    )}
+                  />
+                );
+              }
+              if (item.type == "checkbox") {
+                return (
+                  <FormField
+                    key={index}
+                    control={form.control}
+                    name={item.uid}
+                    render={({ field }) => (
+                      <Checkbox
+                        defaultSelected={field.value}
+                        onValueChange={(value) => {
+                          field.onChange(value);
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                        }}
+                      >
+                        {item.title}
+                      </Checkbox>
+                    )}
+                  />
+                );
+              }
               return (
                 <FormField
                   key={index}
                   control={form.control}
                   name={item.uid}
-                  render={({ field }) => (
-                    <Select
-                      label={item.title}
-                      variant="bordered"
-                      defaultSelectedKeys={field.value && [field.value]}
-                      isInvalid={Boolean(form?.formState?.errors[item.uid])}
-                      errorMessage={form?.formState?.errors[item.uid]?.message}
-                      onSelectionChange={(value) => {
-                        field.onChange(value);
-                        if (item.onChange) {
-                          item.onChange(value);
+                  render={({ field }) => {
+                    return (
+                      <Input
+                        type={item.type}
+                        label={item.title}
+                        variant="bordered"
+                        value={field.value}
+                        isInvalid={Boolean(form?.formState?.errors[item.uid])}
+                        errorMessage={
+                          form?.formState?.errors[item.uid]?.message
                         }
-                      }}
-                    >
-                      {item?.items?.map((data) => (
-                        <SelectItem key={data.value} value={data.value}>
-                          {data.label}
-                        </SelectItem>
-                      ))}
-                    </Select>
-                  )}
+                        onChange={(event) => {
+                          const { value } = event.target;
+                          field.onChange(value);
+                          if (item.onChange) {
+                            item.onChange(value);
+                          }
+                          if (item.slug) {
+                            const slug = value
+                              .toString()
+                              .toLowerCase()
+                              .replace(/\s+/g, "-")
+                              .replace(/[^\w-]+/g, "")
+                              .replace(/--+/g, "-")
+                              .replace(/^-+/, "")
+                              .replace(/-+$/, "");
+                            form.setValue("slug", slug);
+                          }
+                        }}
+                      />
+                    );
+                  }}
                 />
               );
-            }
-            if (item.type == "select") {
-              return (
-                <FormField
-                  key={index}
-                  control={form.control}
-                  name={item.uid}
-                  render={({ field }) => (
-                    <Autocomplete
-                      label={item.title}
-                      variant="bordered"
-                      defaultItems={item.items}
-                      selectedKey={field.value}
-                      isInvalid={Boolean(form?.formState?.errors[item.uid])}
-                      errorMessage={form?.formState?.errors[item.uid]?.message}
-                      onSelectionChange={(value) => {
-                        field.onChange(value ?? "");
-                        if (item.onChange) {
-                          item.onChange(value);
-                        }
-                      }}
-                    >
-                      {item?.items?.map((data) => (
-                        <AutocompleteItem key={data.value} value={data.value}>
-                          {data.label}
-                        </AutocompleteItem>
-                      ))}
-                    </Autocomplete>
-                  )}
-                />
-              );
-            }
-            if (item.type == "select-multiple") {
-              return (
-                <FormField
-                  key={index}
-                  control={form.control}
-                  name={item.uid}
-                  render={({ field }) => (
-                    <MultipleDropdown
-                      label={item.title}
-                      items={item.items}
-                      onChange={(value) => {
-                        field.onChange(value ?? "");
-                        if (item.onChange) {
-                          item.onChange(value);
-                        }
-                      }}
-                      selectedKeys={field.value}
-                      isInvalid={Boolean(form?.formState?.errors[item.uid])}
-                      errorMessage={form?.formState?.errors[item.uid]?.message}
-                    />
-                  )}
-                />
-              );
-            }
-            if (item.type == "file") {
-              return (
-                <FormField
-                  key={index}
-                  control={form.control}
-                  name={item.uid}
-                  render={({ field }) => (
-                    <InputFile
-                      type={item.type}
-                      label={item.title}
-                      variant="bordered"
-                      placeholder={item.title}
-                      isInvalid={Boolean(form?.formState?.errors[item.uid])}
-                      errorMessage={form?.formState?.errors[item.uid]?.message}
-                      onChange={(e) => {
-                        field.onChange(e.target.files[0]);
-                        if (item.onChange) {
-                          item.onChange(e.target.files[0]);
-                        }
-                      }}
-                    />
-                  )}
-                />
-              );
-            }
-            if (item.type == "radio") {
-              return (
-                <FormField
-                  key={index}
-                  control={form.control}
-                  name={item.uid}
-                  render={({ field }) => (
-                    <RadioGroup
-                      label={item.title}
-                      value={field.value}
-                      isInvalid={Boolean(form?.formState?.errors[item.uid])}
-                      errorMessage={form?.formState?.errors[item.uid]?.message}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        if (item.onChange) {
-                          item.onChange(value);
-                        }
-                      }}
-                    >
-                      {item.items.map((data, innerIndex) => (
-                        <Radio value={data.value} key={innerIndex}>
-                          {data.label}
-                        </Radio>
-                      ))}
-                    </RadioGroup>
-                  )}
-                />
-              );
-            }
-            if (item.type == "date") {
-              const isInvalid = Boolean(form?.formState?.errors[item.uid]);
-              return (
-                <FormField
-                  key={index}
-                  control={form.control}
-                  name={item.uid}
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col space-y-1">
-                      <Popover>
-                        <PopoverTrigger asChild>
-                          <FormControl>
-                            <ShadButton
-                              variant={"bordered"}
-                              className={cn(
-                                "pl-3 text-left mt-1 relative border-2 rounded-xl transition-all duration-300 py-[25px] font-normal ring-offset-background",
-                                !field.value && "text-muted-foreground",
-                                isInvalid
-                                  ? "border-danger text-danger"
-                                  : "border-foreground-200 hover:border-foreground-400"
-                              )}
-                            >
-                              <span className="absolute left-3 top-2 mb-1 text-tiny">
-                                {item.title}
-                              </span>
-                              {field.value ? (
-                                <span className="pt-5">
-                                  {format(field.value, "PPP")}
-                                </span>
-                              ) : (
-                                <span className="pt-5">Pick a date</span>
-                              )}
-                              <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                            </ShadButton>
-                          </FormControl>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-auto p-0" align="start">
-                          <Calendar
-                            mode="single"
-                            selected={field.value}
-                            onSelect={(value) => {
-                              field.onChange(value);
-                              if (item.onChange) {
-                                item.onChange(value);
-                              }
-                            }}
-                            disabled={item.disabled}
-                            initialFocus
-                          />
-                        </PopoverContent>
-                      </Popover>
-                      <FormMessage className="text-danger" />
-                    </FormItem>
-                  )}
-                />
-              );
-            }
-            if (item.type == "textarea") {
-              return (
-                <FormField
-                  key={index}
-                  control={form.control}
-                  name={item.uid}
-                  render={({ field }) => (
-                    <Textarea
-                      label={item.title}
-                      placeholder={`Enter your ${item.title.toLowerCase()}`}
-                      variant="bordered"
-                      defaultValue={field.value}
-                      isInvalid={Boolean(form?.formState?.errors[item.uid])}
-                      errorMessage={form?.formState?.errors[item.uid]?.message}
-                      classNames={{
-                        input: "resize-y min-h-[70px]",
-                      }}
-                      onChange={(event) => {
-                        const { value } = event.target;
-                        field.onChange(value);
-                        if (item.onChange) {
-                          item.onChange(value);
-                        }
-                      }}
-                    />
-                  )}
-                />
-              );
-            }
-            if (item.type == "checkbox") {
-              return (
-                <FormField
-                  key={index}
-                  control={form.control}
-                  name={item.uid}
-                  render={({ field }) => (
-                    <Checkbox
-                      defaultSelected={field.value}
-                      onValueChange={(value) => {
-                        field.onChange(value);
-                        if (item.onChange) {
-                          item.onChange(value);
-                        }
-                      }}
-                    >
-                      {item.title}
-                    </Checkbox>
-                  )}
-                />
-              );
-            }
-            return (
-              <FormField
-                key={index}
-                control={form.control}
-                name={item.uid}
-                render={({ field }) => {
-                  return (
-                    <Input
-                      type={item.type}
-                      label={item.title}
-                      variant="bordered"
-                      value={field.value}
-                      isInvalid={Boolean(form?.formState?.errors[item.uid])}
-                      errorMessage={form?.formState?.errors[item.uid]?.message}
-                      onChange={(event) => {
-                        const { value } = event.target;
-                        field.onChange(value);
-                        if (item.onChange) {
-                          item.onChange(value);
-                        }
-                        if (item.slug) {
-                          const slug = value
-                            .toString()
-                            .toLowerCase()
-                            .replace(/\s+/g, "-")
-                            .replace(/[^\w-]+/g, "")
-                            .replace(/--+/g, "-")
-                            .replace(/^-+/, "")
-                            .replace(/-+$/, "");
-                          form.setValue("slug", slug);
-                        }
-                      }}
-                    />
-                  );
-                }}
-              />
-            );
-          })}
-          <div className="flex items-center justify-between">
+            })}
+          </div>
+          <div className="flex items-center justify-end gap-3">
             <Button
               type="button"
               variant="flat"

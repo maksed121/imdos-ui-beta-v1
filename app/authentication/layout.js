@@ -1,4 +1,3 @@
-import { appConfig } from "@/lib/config";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -9,8 +8,10 @@ export default function Layout({ children }) {
         <div className="relative h-full hidden flex-col bg-muted p-10 text-white dark:border-r dark:border-r-zinc-700 lg:flex">
           <div className="absolute inset-0 bg-zinc-900" />
           <div className="relative z-20 items-center font-medium">
-            <h1 className="text-3xl font-semibold">{appConfig.appName}</h1>
-            <p className="text-[14px]">{appConfig.appSlogan}</p>
+            <h1 className="text-3xl font-semibold">
+              {process.env.NEXT_PUBLIC_APP_NAME}
+            </h1>
+            <p className="text-[14px]">{process.env.NEXT_PUBLIC_APP_SLOGAN}</p>
           </div>
           <div className="relative mt-auto">
             <Image

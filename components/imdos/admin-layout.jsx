@@ -1,7 +1,7 @@
 import React from "react";
 import TopBar from "./top-bar";
 import Sidebar from "./sidebar";
-import { sidebarItem } from "@/lib/config";
+import { sidebarItem } from "@/lib/static";
 
 const AdminLayout = ({ children }) => {
   return (

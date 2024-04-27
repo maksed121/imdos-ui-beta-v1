@@ -14,8 +14,9 @@ import {
   MenubarMenu,
   MenubarTrigger,
 } from "@/components/imdos-ui/menubar";
+
 import { ScrollShadow } from "@nextui-org/react";
-import { appConfig } from "@/lib/config";
+import { appConfig } from "@/lib/static";
 
 const Sidebar = ({ links }) => {
   const { sideBar, setSideBar } = useImdosUI();
@@ -32,7 +33,9 @@ const Sidebar = ({ links }) => {
             "logo h-[80px] bg-white border-b border-r shadow-sm dark:bg-zinc-900 flex px-4 items-center transition-all duration-200 justify-center"
           )}
         >
-          <h1 className="text-xl font-bold truncate">{appConfig.appName}</h1>
+          <h1 className="text-xl font-bold truncate">
+            {process.env.NEXT_PUBLIC_APP_NAME}
+          </h1>
         </div>
         <ScrollShadow className="w-[300px] h-[calc(100vh-80px)] overflow-y-scroll no-scrollbar border-r px-3">
           <div className="pb-4">

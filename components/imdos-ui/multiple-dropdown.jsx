@@ -25,6 +25,11 @@ const MultipleDropdown = ({
       variant="bordered"
       isMultiline={true}
       selectionMode="multiple"
+      classNames={{
+        trigger: "py-0",
+        innerWrapper: "bg-transparent mt-4",
+        label: "absolute top-1",
+      }}
       selectedKeys={values}
       isInvalid={isInvalid}
       errorMessage={errorMessage}
@@ -34,7 +39,9 @@ const MultipleDropdown = ({
         return (
           <div className="flex flex-wrap gap-2">
             {items.map((item) => (
-              <Chip key={item.key}>{item.textValue}</Chip>
+              <Chip className="h-6" key={item.key}>
+                {item.textValue}
+              </Chip>
             ))}
           </div>
         );

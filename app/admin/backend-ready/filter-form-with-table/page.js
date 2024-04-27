@@ -22,6 +22,7 @@ import FilterForm from "@/components/imdos/filter-form";
 export const categorySchema = z.object({
   name: z.string().refine((val) => val.length != 0, "Name is required"),
   slug: z.any().refine((val) => val.length != 0, "Slug is required"),
+  priority: z.any().refine((val) => val.length != 0, "Priority is required"),
   logo: z.any().refine((val) => val.length != 0, "Logo is required"),
 });
 
@@ -44,18 +45,7 @@ const Example = () => {
       const formData = new FormData();
       formData.append(
         "select",
-        JSON.stringify(["id", "name", "priority", "logo", "created_at"])
-      );
-
-      formData.append(
-        "conditions",
-        JSON.stringify([
-          {
-            on: "priority",
-            type: "=",
-            value: data?.priority ?? refValues?.priority,
-          },
-        ])
+        JSON.stringify(["id", "name", "slug", "priority", "logo", "created_at"])
       );
 
       const request = await fetch(prefix.endpoint, {
@@ -84,6 +74,14 @@ const Example = () => {
       formData.append("fileUpload", true);
       formData.append("fileDestination", "Categories");
       formData.append("fileValidation", ["jpg", "jpeg", "png"]);
+      formData.append(
+        "validation",
+        JSON.stringify([
+          {
+            slug: "required|unique",
+          },
+        ])
+      );
 
       if (formModal?.data?.id) formData.append("refId", formModal?.data?.id);
 
@@ -235,9 +233,9 @@ const Example = () => {
     },
     {
       title: "Priority",
-      type: "hidden",
+      type: "date",
       uid: "priority",
-      default: refValues?.priority ?? "",
+      default: formModal?.data?.priority ?? "",
     },
     {
       title: "Logo",
@@ -260,7 +258,7 @@ const Example = () => {
       </Card>
       {tableData && (
         <>
-          <Card>
+          <Card className="mt-3">
             <CardHeader>
               <div className="flex flex-col items-start md:flex-row md:items-center justify-between">
                 <div className="mb-3 md:mb-0">
@@ -283,6 +281,12 @@ const Example = () => {
               fields: inputFields,
               schema: prefix.schema,
               onSubmit: onSubmit,
+              layout: {
+                base: "grid grid-cols-1 md:grid-cols-3",
+                span: "md:col-span-3",
+                position: "top",
+                size: "full",
+              },
             }}
           />
         </>

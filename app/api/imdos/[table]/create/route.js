@@ -58,7 +58,6 @@ export async function POST(request, { params }) {
     });
 
     const apiResponse = await apiRequest.json();
-    console.log(apiResponse);
     if (!apiRequest.ok) {
       return NextResponse.json({ error: apiResponse.message }, { status: 500 });
     }

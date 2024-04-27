@@ -48,7 +48,7 @@ export async function POST(request) {
 
     const { data } = await api.json();
 
-    if (!data.length) {
+    if (!data?.length) {
       return NextResponse.json(
         { message: "Invalid email or password" },
         { status: 401 }
@@ -77,6 +77,7 @@ export async function POST(request) {
 
     return NextResponse.json({ message: "Login successful" }, { status: 200 });
   } catch (error) {
+    console.log(error);
     return NextResponse.json(
       { message: "Something went wrong" },
       { status: 500 }

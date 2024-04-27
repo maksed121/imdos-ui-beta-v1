@@ -12,6 +12,7 @@ import {
 import { Modal, ModalContent, ModalHeader, ModalBody } from "@nextui-org/react";
 
 import { useImdosUI } from "@/providers/ImdosProvider";
+import clsx from "clsx";
 
 const FormModal = ({ title, description, form }) => {
   const { formModal, setFormModal } = useImdosUI();
@@ -19,11 +20,14 @@ const FormModal = ({ title, description, form }) => {
   return (
     <Modal
       backdrop={"blur"}
-      className="dark:bg-zinc-950 border pb-3"
+      className={clsx(
+        "dark:bg-zinc-950 border pb-3 m-0",
+        form?.layout?.size == "full" && "rounded-none overflow-y-auto"
+      )}
       isOpen={formModal.show}
       isDismissable={false}
-      placement={form?.fields?.length > 5 ? "top-center" : "center"}
-      size={form?.fields?.length > 5 && "2xl"}
+      placement={form?.layout?.position ?? "center"}
+      size={form?.layout?.size ?? ""}
       onClose={() => setFormModal({ show: false })}
     >
       <ModalContent>
@@ -37,6 +41,7 @@ const FormModal = ({ title, description, form }) => {
                 fields={form.fields}
                 schema={form.schema}
                 onSubmit={form.onSubmit}
+                layout={form.layout ?? {}}
                 onCancel={() => {
                   setFormModal({ show: false });
                 }}
